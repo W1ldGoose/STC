@@ -7,6 +7,7 @@ int LCG_function(const int x, const int a_coefficient, const int c_increment, co
     return (a_coefficient * x + c_increment) % m_modulo;
 }
 
+// нахождение мультипликативного обратного
 int modular_inverse(int a, int m) {
     int t, nt, r, nr, q, tmp;
     t = 0;
@@ -36,7 +37,10 @@ struct coeff {
 
 std::vector<coeff> bruteforce(const int x0, const int x1, const int x2, const int x3) {
     std::vector<coeff> c_vec;
+    // так ни один коэффициент не известен, начнем с перебора m
     for (int m = 2; m <= M_MAX; ++m) {
+        // перейдем к последовательсти разностей,
+        // чтобы избавиться от неизвестного коэффициента c
         int diff0 = (x1 - x0);
         int diff1 = (x2 - x1);
         int diff2 = (x3 - x2);
@@ -50,15 +54,18 @@ std::vector<coeff> bruteforce(const int x0, const int x1, const int x2, const in
         if (diff2 < 0) {
             diff2 += m;
         }
-
+        
         int inv_diff0 = modular_inverse(diff0, m);
+        // если обратное по модулю не нашлось пропускаем этот m
         if (inv_diff0 < 0) continue;
         int a = (diff1 * inv_diff0) % m;
 
+        // проверяем последовательность разностей с найденым a и подобранным m
         int my_diff1 = (a * diff0) % m;
         int my_diff2 = (a * diff1) % m;
 
         if (my_diff1 == diff1 && my_diff2 == diff2) {
+            // выразим неизвестный коэффициент c
             int c = (x1 - a * x0) % m;
             if (c < 0) {
                 c += m;
@@ -78,11 +85,12 @@ std::vector<coeff> bruteforce(const int x0, const int x1, const int x2, const in
     }
     return c_vec;
 }
-
+// являются ли числа взаимно простыми
 int gcd(int x, int y) {
     return y ? gcd(y, x % y) : x;
 }
-
+// наиболее вероятные коэффициенты и 5-й элемент находятся исходя из того, 
+// что m и c должны быть взаимно простыми 
 void select_coeff(std::vector<coeff> c_vec) {
     if (c_vec.size() == 0) {
         return;
